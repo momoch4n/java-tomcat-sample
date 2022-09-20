@@ -14,18 +14,22 @@ pipeline {
             }
         }
         stage('Deploy to Staging Environment'){
-            steps{
-                build job: 'deploy-application-staging-environment-pipeline'
-
-            }
-            
+            steps {
+                    echo "Copying the Artifacts....."
+                    copyArtifacts filter: '**/*.war', fingerprintArtifacts: true, projectName: 'build-web-application-code-pipeline'
+                    echo "Deploy to stage"
+                    deploy adapters: [tomcat9(credentialsId: 'tomcat_server', path: '', url: 'http://172.31.4.15:8080')], contextPath: '/', war: '**/*.war'
+                }
         }
         stage('Deploy to Production Environment'){
             steps{
                 timeout(time:5, unit:'DAYS'){
                     input message:'Approve PRODUCTION Deployment?'
                 }
-                build job: 'deploy-application-production-environment-pipeline'
+                    echo "Copying the Artifacts....."
+                    copyArtifacts filter: '**/*.war', fingerprintArtifacts: true, projectName: 'build-web-application-code-pipeline'
+                    echo "Deploy to stage"
+                    deploy adapters: [tomcat9(credentialsId: 'tomcat_server', path: '', url: 'http://172.31.5.118:8080')], contextPath: '/', war: '**/*.war'
             }
         }
     }
